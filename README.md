@@ -15,8 +15,8 @@ Automatically deploy your spatial website to [Needle Cloud](https://cloud.needle
 |Input||
 |-|-|
 | `token`| **required**, Needle Cloud access token
-| `name` | deployment name
-| `dir` | root directory of the website files, must contain an `index.html`
+| `name` | deployment name, if no name is provided then the repository name will be used
+| `dir` | root directory of the website files, must contain an `index.html`. If no directory is provided the build directory from `needle.config.json` will be used
 | **Output** | |
 | `url` | URL to the deployed website |
 
