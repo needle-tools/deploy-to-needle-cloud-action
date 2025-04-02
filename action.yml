@@ -1,0 +1,19 @@
+name: 'Deploy to Needle Cloud'
+description: 'Automate deployments to Needle Cloud with Github actions'
+inputs:
+  token:
+    description: 'Needle Cloud Access Token (requires write permissions)'
+    required: true
+  name:
+    description: 'Needle Cloud Project Name'
+    required: false
+  dir:
+    description: 'Directory to deploy'
+    required: false
+  
+outputs:
+  url:
+    description: 'Deployment URL'
+runs:
+  using: 'node20'
+  main: 'index.js'
