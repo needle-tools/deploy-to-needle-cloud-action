@@ -1,5 +1,9 @@
 name: 'Deploy to Needle Cloud'
 description: 'Automate deployments to Needle Cloud with Github actions'
+branding:
+  icon: 'upload-cloud'
+  color: 'blue'
+author: Needle
 inputs:
   token:
     description: 'Needle Cloud Access Token (requires write permissions)'
