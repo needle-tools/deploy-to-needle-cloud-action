@@ -23,7 +23,7 @@ Automatically deploy your spatial website to [Needle Cloud](https://cloud.needle
 ### Example
 ```yml
       - name: Deploy to Needle Cloud
-        uses: needle-tools/deploy-to-needle-cloud-action@v1.0.1
+        uses: needle-tools/deploy-to-needle-cloud-action@v1.0.2
         id: deploy
         with:
             token: ${{ secrets.NEEDLE_CLOUD_TOKEN }}
@@ -67,12 +67,12 @@ jobs:
 
       # Deploy to Needle Cloud
       - name: Deploy to Needle Cloud
-        uses: needle-tools/deploy-to-needle-cloud-action@v1.0.1
+        uses: needle-tools/deploy-to-needle-cloud-action@v1.0.2
         id: deploy
         with:
             token: ${{ secrets.NEEDLE_CLOUD_TOKEN }}
-            name: vite-template
             dir: ./dist
+            name: vite-template # optional
         env:
           NODE_ENV: production
           NEEDLE_CLOUD_TOKEN: ${{ secrets.NEEDLE_CLOUD_TOKEN }}
