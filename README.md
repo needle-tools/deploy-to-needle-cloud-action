@@ -4,7 +4,7 @@ Automatically deploy your spatial website to [Needle Cloud](https://cloud.needle
 
 ## Usage
 
-1) Create an access token on Needle Cloud with `read/write` permissions
+1) [Create an access token](https://cloud.needle.tools/team) on Needle Cloud with `read/write` permissions
 2) Add your access token in a repository secret and name it `NEEDLE_CLOUD_TOKEN`
 3) Create a github workflow, e.g. `.github/workflows/deploy.yml`
 
