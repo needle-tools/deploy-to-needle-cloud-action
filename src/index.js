@@ -3,9 +3,10 @@ import * as exec from '@actions/exec';
 
 async function run() {
     try {
+        const [repositoryOwner, repositoryName] = process.env.GITHUB_REPOSITORY.split("/");
         const token = core.getInput('token');
         const dir = core.getInput('dir') || ".";
-        const name = core.getInput('name');
+        const name = core.getInput('name') || repositoryName;
 
         let output = '';
         let error = '';

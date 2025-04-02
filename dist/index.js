@@ -27608,9 +27608,10 @@ __nccwpck_require__.r(__webpack_exports__);
 
 async function run() {
     try {
+        const [repositoryOwner, repositoryName] = process.env.GITHUB_REPOSITORY.split("/");
         const token = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('token');
         const dir = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('dir') || ".";
-        const name = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('name');
+        const name = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('name') || repositoryName;
 
         let output = '';
         let error = '';
