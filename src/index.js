@@ -1,5 +1,4 @@
 import * as core from '@actions/core';
-import * as github from '@actions/github';
 import * as exec from '@actions/exec';
 
 async function run() {
@@ -20,8 +19,8 @@ async function run() {
                 }
             }
         };
-
-        const cmd = `npx --yes needle-cloud deploy "${dir}" --name "${name}" --token "${token}"`;
+        await exec.exec("npm i -g needle-cloud", [], options);
+        const cmd = `needle-cloud deploy "${dir}" --name "${name}" --token "${token}"`;
         const exitCode = await exec.exec(cmd, [], options);
         if (exitCode !== 0) {
             throw new Error(`Command failed with exit code ${exitCode}: ${error}`);
