@@ -19,7 +19,7 @@ jobs:
         id: deployment
         with:
           token: ${{ secrets.NEEDLE_CLOUD_TOKEN }}
-          name: test-deployment
+          # name: test-deployment
           dir: ./test
       
       - name: Print deployment URL
