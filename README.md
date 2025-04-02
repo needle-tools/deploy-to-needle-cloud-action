@@ -2,15 +2,15 @@
 
 ## Usage
 
-1) Create an access token on Needle Cloud with write permissions
-2) Add your access token as a repository secret and name it e.g. `NEEDLE_CLOUD_TOKEN`
-3) Create a github workflow as e.g. `.github/workflows/deploy.yml` ([full example](https://github.com/needle-engine/vite-template/blob/main/.github/workflows/deploy.yml))
+1) Create an access token on Needle Cloud with `read/write` permissions
+2) Add your access token in a repository secret and name it `NEEDLE_CLOUD_TOKEN`
+3) Create a github workflow, e.g. `.github/workflows/deploy.yml`
 
 ## Options
 
 |Input||
 |-|-|
-| `token`| required, Needle Cloud access token
+| `token`| **required**, Needle Cloud access token
 | `name` | deployment name
 | `dir` | root directory of the website files, must contain an `index.html`
 | **Output** | |
