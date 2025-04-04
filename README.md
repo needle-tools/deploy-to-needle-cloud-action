@@ -81,6 +81,11 @@ jobs:
       - name: Display deployment URL
         run: |
           echo "::notice title=Deployment URL::Deployed to ${{ steps.deploy.outputs.url }}"
+
+          # Add to GitHub step summary (appears at bottom of workflow run)
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "Application has been successfully deployed to Needle Cloud!" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment URL:** [${{ steps.deploy.outputs.url }}](${{ steps.deploy.outputs.url }})" >> $GITHUB_STEP_SUMMARY
 ```
 
 # Contact ✒️
