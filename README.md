@@ -60,7 +60,7 @@ jobs:
         run: npm ci
 
       # Build the web project
-      - name: Build Vite project
+      - name: Build web project
         run: npm run build:production
         env:
           NEEDLE_CLOUD_TOKEN: ${{ secrets.NEEDLE_CLOUD_TOKEN }}
