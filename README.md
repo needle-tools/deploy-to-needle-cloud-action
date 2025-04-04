@@ -72,7 +72,7 @@ jobs:
         with:
             token: ${{ secrets.NEEDLE_CLOUD_TOKEN }}
             dir: ./dist
-            name: vite-template # optional
+            # name: vite-template # (optional, using the repository name if not provided)
         env:
           NODE_ENV: production
           NEEDLE_CLOUD_TOKEN: ${{ secrets.NEEDLE_CLOUD_TOKEN }}
