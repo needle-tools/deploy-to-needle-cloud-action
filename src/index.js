@@ -11,6 +11,10 @@ async function run() {
         const next = core.getInput('next') === 'true';
         const webhookUrl = core.getInput('webhookUrl');
 
+        if (!webhookUrl) {
+            core.warning("No webhook URL provided.");
+        }
+
         let output = '';
         let error = '';
         const options = {

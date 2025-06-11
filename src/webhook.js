@@ -4,10 +4,9 @@ import https from 'https';
  * @param {string} url - The webhook URL to send the event to.
  * @param {Object} msg - The message to send in the webhook event.
  */
-export function sendWebhookEvent(url, msg) 
-{
+export function sendWebhookEvent(url, msg) {
 
-    if(url.includes("discord.com")) {
+    if (url.includes("discord.com")) {
         // Discord webhook
         const data = JSON.stringify({
             content: msg.content,
@@ -24,7 +23,7 @@ export function sendWebhookEvent(url, msg)
                 'Content-Length': Buffer.byteLength(data)
             }
         };
-        
+
         const req = https.request(options, (res) => {
             if (res.statusCode !== 204) {
                 console.error(`Discord webhook failed with status code: ${res.statusCode}`);
@@ -35,6 +34,9 @@ export function sendWebhookEvent(url, msg)
         });
         req.write(data);
         req.end();
+    }
+    else {
+        console.warn("Unknown webhook URL format. Only Discord webhooks are supported at the moment.");
     }
 
 }
