@@ -14,7 +14,9 @@ inputs:
   dir:
     description: 'Directory to deploy'
     required: false
-  
+  next:
+    description: 'Using the needle-cloud@next package version'
+    required: false
 outputs:
   url:
     description: 'Deployment URL'
