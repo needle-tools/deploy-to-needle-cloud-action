@@ -7,6 +7,7 @@ import https from 'https';
 export function sendWebhookEvent(url, msg) {
 
     if (url.includes("discord.com")) {
+        console.log("Sending Discord webhook event...");
         // Discord webhook
         const data = JSON.stringify({
             content: msg.content,
