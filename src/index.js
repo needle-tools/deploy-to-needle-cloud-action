@@ -7,6 +7,7 @@ async function run() {
         const token = core.getInput('token');
         const dir = core.getInput('dir') || ".";
         const name = core.getInput('name') || repositoryName;
+        const next = core.getInput('next') === 'true';
 
         let output = '';
         let error = '';
@@ -20,7 +21,12 @@ async function run() {
                 }
             }
         };
-        await exec.exec("npm i -g needle-cloud", [], options);
+        if (next) {
+            await exec.exec("npm i -g needle-cloud@next", [], options);
+        }
+        else {
+            await exec.exec("npm i -g needle-cloud", [], options);
+        }
         const cmd = `needle-cloud deploy "${dir}" --name "${name}" --token "${token}"`;
         const exitCode = await exec.exec(cmd, [], options);
         if (exitCode !== 0) {
