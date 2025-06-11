@@ -37,7 +37,10 @@ async function run() {
             await exec.exec("npm i -g needle-cloud", [], options);
         }
         const cmd = `needle-cloud deploy "${dir}" --name "${name}" --token "${token}"`;
-        const exitCode = await exec.exec(cmd, [], options);
+        const exitCode = await exec.exec(cmd, [], options).catch((err) => {
+            error += err.message;
+            return { exitCode: 1, error: err.message };
+        });
         if (exitCode !== 0) {
             if (webhookUrl) {
                 sendWebhookEvent(webhookUrl, `**Deployment failed** ([Github Job](<${actionJobUrl}>)) with exit code ${exitCode}`);
