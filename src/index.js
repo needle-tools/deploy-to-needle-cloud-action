@@ -49,12 +49,12 @@ async function run() {
             console.log(`Deployment URL: ${deployUrl}`);
             core.setOutput("url", deployUrl);
             if (webhookUrl) {
-                await sendWebhookEvent(webhookUrl, `**[Needle Cloud]**\nSuccessfully deployed [${repositoryOwner}/${repositoryName}](<${repositoryHtmlUrl}>) to <${deployUrl}>`);
+                await sendWebhookEvent(webhookUrl, `**Successfully deployed [${repositoryOwner}/${repositoryName}](<${repositoryHtmlUrl}>) to <${deployUrl}>`);
             }
         } else {
             core.warning("Could not find deployment URL in output");
             core.setOutput("url", "");
-            if (webhookUrl) await sendWebhookEvent(webhookUrl, `**[Needle Cloud]**\nSuccessfully deployed [${repositoryOwner}/${repositoryName}](<${repositoryHtmlUrl}>) - but no URL was found in the output.`);
+            if (webhookUrl) await sendWebhookEvent(webhookUrl, `**Successfully deployed [${repositoryOwner}/${repositoryName}](<${repositoryHtmlUrl}>) - but no URL was found in the output.`);
         }
     } catch (error) {
         core.setFailed(error.message);

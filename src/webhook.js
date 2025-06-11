@@ -3,22 +3,28 @@ import https from 'https';
 /**
  * @param {string} url - The webhook URL to send the event to.
  * @param {string} msg - The message to send in the webhook event.
+ * @param {string|null} username - The username to use for the webhook event (optional).
  */
 export function sendWebhookEvent(url, msg) {
     if (!url?.startsWith("https://")) {
         console.error("Invalid webhook URL. It must start with 'https://'.");
         return;
     }
+
     const webhookUrl = new URL(url);
+    const username = "Needle Cloud (Github Action)";
+
     if (webhookUrl.hostname.endsWith("discord.com")) {
         const data = JSON.stringify({
             content: msg,
+            username: username || undefined
         });
         send(webhookUrl, 443, data);
     }
     else if (webhookUrl.hostname.endsWith("slack.com")) {
         const data = JSON.stringify({
             text: msg,
+            username: username || undefined
         });
         send(webhookUrl, 443, data);
     }
