@@ -17,6 +17,9 @@ inputs:
   next:
     description: 'Using the needle-cloud@next package version'
     required: false
+  webhookUrl:
+    description: 'Webhook URL to notify on deployment completion'
+    required: false
 outputs:
   url:
     description: 'Deployment URL'

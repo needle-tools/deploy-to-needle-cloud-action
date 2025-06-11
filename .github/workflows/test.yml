@@ -21,6 +21,7 @@ jobs:
           token: ${{ secrets.NEEDLE_CLOUD_TOKEN }}
           # name: test-deployment
           dir: ./test
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
       
       - name: Print deployment URL
         run: echo "Deployed to ${{ steps.deployment.outputs.url }}"
