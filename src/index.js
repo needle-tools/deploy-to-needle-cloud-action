@@ -36,7 +36,7 @@ async function run() {
         const cmd = `needle-cloud deploy "${dir}" --name "${name}" --token "${token}"`;
         const exitCode = await exec.exec(cmd, [], options);
         if (exitCode !== 0) {
-            if (webhookUrl) sendWebhookEvent(webhookUrl, `Deployment failed for ${repositoryOwner}/${repositoryName} with exit code ${exitCode}`);
+            if (webhookUrl) await sendWebhookEvent(webhookUrl, `[Needle Cloud] **Deployment failed** for ${repositoryOwner}/${repositoryName} with exit code ${exitCode}`);
             throw new Error(`Command failed with exit code ${exitCode}: ${error}`);
         }
 
@@ -47,12 +47,12 @@ async function run() {
             console.log(`Deployment URL: ${deployUrl}`);
             core.setOutput("url", deployUrl);
             if (webhookUrl) {
-                sendWebhookEvent(webhookUrl, `Deployment successful for ${repositoryOwner}/${repositoryName}. View it at: <${deployUrl}>`);
+                await sendWebhookEvent(webhookUrl, `**[Needle Cloud]** Successfully deployed ${repositoryOwner}/${repositoryName} to <${deployUrl}>`);
             }
         } else {
             core.warning("Could not find deployment URL in output");
             core.setOutput("url", "");
-            if (webhookUrl) sendWebhookEvent(webhookUrl, `Deployment successful for ${repositoryOwner}/${repositoryName}, but no URL was found in the output.`);
+            if (webhookUrl) await sendWebhookEvent(webhookUrl, `[Needle Cloud] Successfully deployed ${repositoryOwner}/${repositoryName} - but no URL was found in the output.`);
         }
     } catch (error) {
         core.setFailed(error.message);

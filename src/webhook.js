@@ -36,7 +36,7 @@ export function sendWebhookEvent(url, msg) {
 function send(url, port, body) {
     const options = {
         hostname: url.hostname,
-        path: url.pathname,
+        path: url.pathname + url.search,
         protocol: url.protocol,
         port: port || 443,
         method: 'POST',
