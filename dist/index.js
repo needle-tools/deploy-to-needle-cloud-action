@@ -27612,6 +27612,7 @@ async function run() {
         const token = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('token');
         const dir = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('dir') || ".";
         const name = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('name') || repositoryName;
+        const next = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('next') === 'true';
 
         let output = '';
         let error = '';
@@ -27625,7 +27626,12 @@ async function run() {
                 }
             }
         };
-        await _actions_exec__WEBPACK_IMPORTED_MODULE_1__.exec("npm i -g needle-cloud", [], options);
+        if (next) {
+            await _actions_exec__WEBPACK_IMPORTED_MODULE_1__.exec("npm i -g needle-cloud@next", [], options);
+        }
+        else {
+            await _actions_exec__WEBPACK_IMPORTED_MODULE_1__.exec("npm i -g needle-cloud", [], options);
+        }
         const cmd = `needle-cloud deploy "${dir}" --name "${name}" --token "${token}"`;
         const exitCode = await _actions_exec__WEBPACK_IMPORTED_MODULE_1__.exec(cmd, [], options);
         if (exitCode !== 0) {
