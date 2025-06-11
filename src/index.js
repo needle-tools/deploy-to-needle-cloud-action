@@ -12,6 +12,7 @@ async function run() {
         const webhookUrl = core.getInput('webhookUrl');
 
         const repositoryHtmlUrl = `${process.env.GITHUB_SERVER_URL}/${repositoryOwner}/${repositoryName}`;
+        const actionJobUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}/jobs/${process.env.GITHUB_JOB}`;
 
         if (!webhookUrl) {
             core.warning("No webhook URL provided.");
@@ -38,7 +39,9 @@ async function run() {
         const cmd = `needle-cloud deploy "${dir}" --name "${name}" --token "${token}"`;
         const exitCode = await exec.exec(cmd, [], options);
         if (exitCode !== 0) {
-            if (webhookUrl) await sendWebhookEvent(webhookUrl, `[Needle Cloud] **Deployment failed** for [${repositoryOwner}/${repositoryName}](<${repositoryHtmlUrl}>) with exit code ${exitCode}`);
+            if (webhookUrl) {
+                sendWebhookEvent(webhookUrl, `**Deployment failed** ([Github Job](<${actionJobUrl}>)) with exit code ${exitCode}`);
+            }
             throw new Error(`Command failed with exit code ${exitCode}: ${error}`);
         }
 
@@ -49,13 +52,14 @@ async function run() {
             console.log(`Deployment URL: ${deployUrl}`);
             core.setOutput("url", deployUrl);
             if (webhookUrl) {
-                await sendWebhookEvent(webhookUrl, `**Successfully deployed [${repositoryOwner}/${repositoryName}](<${repositoryHtmlUrl}>) to <${deployUrl}>`);
+                sendWebhookEvent(webhookUrl, `**Successfully deployed** \`${repositoryOwner}/${repositoryName}\` [Repository](<${repositoryHtmlUrl}>) - [Github Job](<${actionJobUrl}>)\n<${deployUrl}>`);
             }
         } else {
             core.warning("Could not find deployment URL in output");
             core.setOutput("url", "");
-            if (webhookUrl) await sendWebhookEvent(webhookUrl, `**Successfully deployed [${repositoryOwner}/${repositoryName}](<${repositoryHtmlUrl}>) - but no URL was found in the output.`);
+            if (webhookUrl) sendWebhookEvent(webhookUrl, `**Successfully(?) deployed** \`${repositoryOwner}/${repositoryName}\` [Repository](<${repositoryHtmlUrl}>) - [Github Job](<${actionJobUrl}>) but no URL was found in the output.`);
         }
+
     } catch (error) {
         core.setFailed(error.message);
     }

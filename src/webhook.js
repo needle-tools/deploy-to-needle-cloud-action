@@ -12,7 +12,7 @@ export function sendWebhookEvent(url, msg) {
     }
 
     const webhookUrl = new URL(url);
-    const username = "Needle Cloud (Github Action)";
+    const username = "Needle Cloud (CI)";
 
     if (webhookUrl.hostname.endsWith("discord.com")) {
         const data = JSON.stringify({
@@ -40,23 +40,34 @@ export function sendWebhookEvent(url, msg) {
  * @param {number} port - The port to use for the request, defaults to 443.
  */
 function send(url, port, body) {
-    const options = {
-        hostname: url.hostname,
-        path: url.pathname + url.search,
-        protocol: url.protocol,
-        port: port || 443,
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(body)
-        }
-    };
-    const req = https.request(options, (res) => {
-        console.error(`Discord webhook finished with status code: ${res.statusCode}`);
+    return new Promise((resolve, reject) => {
+        const options = {
+            hostname: url.hostname,
+            path: url.pathname + url.search,
+            protocol: url.protocol,
+            port: port || 443,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(body)
+            }
+        };
+        const req = https.request(options, (res) => {
+            console.error(`Webhook finished with status code: ${res.statusCode}`);
+            let responseBody = '';
+            res.on('data', (chunk) => {
+                responseBody += chunk;
+            });
+            res.on('end', () => {
+                resolve(responseBody);
+            });
+        });
+        req.on('error', (error) => {
+            console.error(`Error sending webhook: ${error.message}`);
+            reject(error);
+        });
+        req.write(body);
+        req.end();
+        console.log(`Webhook sent to ${url.href}`);
     });
-    req.on('error', (error) => {
-        console.error(`Error sending Discord webhook: ${error.message}`);
-    });
-    req.write(body);
-    req.end();
 }
