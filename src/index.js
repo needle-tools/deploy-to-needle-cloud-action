@@ -11,6 +11,8 @@ async function run() {
         const next = core.getInput('next') === 'true';
         const webhookUrl = core.getInput('webhookUrl');
 
+        const repositoryHtmlUrl = `${process.env.GITHUB_SERVER_URL}/${repositoryOwner}/${repositoryName}`;
+
         if (!webhookUrl) {
             core.warning("No webhook URL provided.");
         }
@@ -36,7 +38,7 @@ async function run() {
         const cmd = `needle-cloud deploy "${dir}" --name "${name}" --token "${token}"`;
         const exitCode = await exec.exec(cmd, [], options);
         if (exitCode !== 0) {
-            if (webhookUrl) await sendWebhookEvent(webhookUrl, `[Needle Cloud] **Deployment failed** for ${repositoryOwner}/${repositoryName} with exit code ${exitCode}`);
+            if (webhookUrl) await sendWebhookEvent(webhookUrl, `[Needle Cloud] **Deployment failed** for [${repositoryOwner}/${repositoryName}](<${repositoryHtmlUrl}>) with exit code ${exitCode}`);
             throw new Error(`Command failed with exit code ${exitCode}: ${error}`);
         }
 
@@ -47,12 +49,12 @@ async function run() {
             console.log(`Deployment URL: ${deployUrl}`);
             core.setOutput("url", deployUrl);
             if (webhookUrl) {
-                await sendWebhookEvent(webhookUrl, `**[Needle Cloud]** Successfully deployed ${repositoryOwner}/${repositoryName} to <${deployUrl}>`);
+                await sendWebhookEvent(webhookUrl, `**[Needle Cloud]**\nSuccessfully deployed [${repositoryOwner}/${repositoryName}](<${repositoryHtmlUrl}>) to <${deployUrl}>`);
             }
         } else {
             core.warning("Could not find deployment URL in output");
             core.setOutput("url", "");
-            if (webhookUrl) await sendWebhookEvent(webhookUrl, `[Needle Cloud] Successfully deployed ${repositoryOwner}/${repositoryName} - but no URL was found in the output.`);
+            if (webhookUrl) await sendWebhookEvent(webhookUrl, `**[Needle Cloud]**\nSuccessfully deployed [${repositoryOwner}/${repositoryName}](<${repositoryHtmlUrl}>) - but no URL was found in the output.`);
         }
     } catch (error) {
         core.setFailed(error.message);
