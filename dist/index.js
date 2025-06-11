@@ -27578,17 +27578,6 @@ module.exports = parseParams
 /******/ 		__nccwpck_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
 /******/ 	})();
 /******/ 	
-/******/ 	/* webpack/runtime/make namespace object */
-/******/ 	(() => {
-/******/ 		// define __esModule on exports
-/******/ 		__nccwpck_require__.r = (exports) => {
-/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 			}
-/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 		};
-/******/ 	})();
-/******/ 	
 /******/ 	/* webpack/runtime/compat */
 /******/ 	
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
@@ -27598,21 +27587,108 @@ var __webpack_exports__ = {};
 // This entry need to be wrapped in an IIFE because it need to be in strict mode.
 (() => {
 "use strict";
-__nccwpck_require__.r(__webpack_exports__);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(7484);
-/* harmony import */ var _actions_core__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(_actions_core__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _actions_exec__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(5236);
-/* harmony import */ var _actions_exec__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(_actions_exec__WEBPACK_IMPORTED_MODULE_1__);
+
+// EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
+var core = __nccwpck_require__(7484);
+// EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js
+var exec = __nccwpck_require__(5236);
+// EXTERNAL MODULE: external "https"
+var external_https_ = __nccwpck_require__(5692);
+var external_https_default = /*#__PURE__*/__nccwpck_require__.n(external_https_);
+;// CONCATENATED MODULE: ./src/webhook.js
+
+
+/**
+ * @param {string} url - The webhook URL to send the event to.
+ * @param {string} msg - The message to send in the webhook event.
+ * @param {string|null} username - The username to use for the webhook event (optional).
+ */
+function sendWebhookEvent(url, msg) {
+    if (!url?.startsWith("https://")) {
+        console.error("Invalid webhook URL. It must start with 'https://'.");
+        return;
+    }
+
+    const webhookUrl = new URL(url);
+    const username = "Needle Cloud (CI)";
+
+    if (webhookUrl.hostname.endsWith("discord.com")) {
+        const data = JSON.stringify({
+            content: msg,
+            username: username || undefined
+        });
+        send(webhookUrl, 443, data);
+    }
+    else if (webhookUrl.hostname.endsWith("slack.com")) {
+        const data = JSON.stringify({
+            text: msg,
+            username: username || undefined
+        });
+        send(webhookUrl, 443, data);
+    }
+    else {
+        console.warn("Unknown webhook URL format. Only Discord webhooks are supported at the moment.");
+    }
+}
+
+
+/**
+ * @param {URL} url - The URL to send the request to.
+ * @param {string} body - The body of the request.
+ * @param {number} port - The port to use for the request, defaults to 443.
+ */
+function send(url, port, body) {
+    return new Promise((resolve, reject) => {
+        const options = {
+            hostname: url.hostname,
+            path: url.pathname + url.search,
+            protocol: url.protocol,
+            port: port || 443,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(body)
+            }
+        };
+        const req = external_https_default().request(options, (res) => {
+            console.error(`Webhook finished with status code: ${res.statusCode}`);
+            let responseBody = '';
+            res.on('data', (chunk) => {
+                responseBody += chunk;
+            });
+            res.on('end', () => {
+                resolve(responseBody);
+            });
+        });
+        req.on('error', (error) => {
+            console.error(`Error sending webhook: ${error.message}`);
+            reject(error);
+        });
+        req.write(body);
+        req.end();
+        console.log(`Webhook sent to ${url.href}`);
+    });
+}
+;// CONCATENATED MODULE: ./src/index.js
+
 
 
 
 async function run() {
     try {
         const [repositoryOwner, repositoryName] = process.env.GITHUB_REPOSITORY.split("/");
-        const token = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('token');
-        const dir = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('dir') || ".";
-        const name = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('name') || repositoryName;
-        const next = _actions_core__WEBPACK_IMPORTED_MODULE_0__.getInput('next') === 'true';
+        const token = core.getInput('token');
+        const dir = core.getInput('dir') || ".";
+        const name = core.getInput('name') || repositoryName;
+        const next = core.getInput('next') === 'true';
+        const webhookUrl = core.getInput('webhookUrl');
+
+        const repositoryHtmlUrl = `${process.env.GITHUB_SERVER_URL}/${repositoryOwner}/${repositoryName}`;
+        const actionJobUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}/jobs/${process.env.GITHUB_JOB}`;
+
+        if (!webhookUrl) {
+            core.warning("No webhook URL provided.");
+        }
 
         let output = '';
         let error = '';
@@ -27627,14 +27703,17 @@ async function run() {
             }
         };
         if (next) {
-            await _actions_exec__WEBPACK_IMPORTED_MODULE_1__.exec("npm i -g needle-cloud@next", [], options);
+            await exec.exec("npm i -g needle-cloud@next", [], options);
         }
         else {
-            await _actions_exec__WEBPACK_IMPORTED_MODULE_1__.exec("npm i -g needle-cloud", [], options);
+            await exec.exec("npm i -g needle-cloud", [], options);
         }
         const cmd = `needle-cloud deploy "${dir}" --name "${name}" --token "${token}"`;
-        const exitCode = await _actions_exec__WEBPACK_IMPORTED_MODULE_1__.exec(cmd, [], options);
+        const exitCode = await exec.exec(cmd, [], options);
         if (exitCode !== 0) {
+            if (webhookUrl) {
+                sendWebhookEvent(webhookUrl, `**Deployment failed** ([Github Job](<${actionJobUrl}>)) with exit code ${exitCode}`);
+            }
             throw new Error(`Command failed with exit code ${exitCode}: ${error}`);
         }
 
@@ -27643,13 +27722,18 @@ async function run() {
         if (urlMatch && urlMatch[0]) {
             const deployUrl = urlMatch[0];
             console.log(`Deployment URL: ${deployUrl}`);
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput("url", deployUrl);
+            core.setOutput("url", deployUrl);
+            if (webhookUrl) {
+                sendWebhookEvent(webhookUrl, `**Successfully deployed** \`${repositoryOwner}/${repositoryName}\` [Repository](<${repositoryHtmlUrl}>) - [Github Job](<${actionJobUrl}>)\n<${deployUrl}>`);
+            }
         } else {
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.warning("Could not find deployment URL in output");
-            _actions_core__WEBPACK_IMPORTED_MODULE_0__.setOutput("url", "");
+            core.warning("Could not find deployment URL in output");
+            core.setOutput("url", "");
+            if (webhookUrl) sendWebhookEvent(webhookUrl, `**Successfully(?) deployed** \`${repositoryOwner}/${repositoryName}\` [Repository](<${repositoryHtmlUrl}>) - [Github Job](<${actionJobUrl}>) but no URL was found in the output.`);
         }
+
     } catch (error) {
-        _actions_core__WEBPACK_IMPORTED_MODULE_0__.setFailed(error.message);
+        core.setFailed(error.message);
     }
 }
 
