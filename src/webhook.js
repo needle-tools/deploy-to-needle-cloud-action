@@ -29,7 +29,7 @@ export function sendWebhookEvent(url, msg) {
         send(webhookUrl, 443, data);
     }
     else {
-        console.warn("Unknown webhook URL format. Only Discord webhooks are supported at the moment.");
+        console.warn("Unknown webhook URL format. Only Discord and Slack webhooks are supported at the moment.");
     }
 }
 

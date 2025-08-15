@@ -14,6 +14,8 @@ async function run() {
 
         const repositoryHtmlUrl = `${process.env.GITHUB_SERVER_URL}/${repositoryOwner}/${repositoryName}`;
         const actionJobUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+        const commitSha = process.env.GITHUB_SHA;
+        const commitUrl = `${process.env.GITHUB_SERVER_URL}/${repositoryOwner}/${repositoryName}/commit/${commitSha}`;
 
         if (!webhookUrl) {
             core.warning("No webhook URL provided.");
@@ -44,7 +46,7 @@ async function run() {
         });
         if (exitCode !== 0) {
             if (webhookUrl) {
-                sendWebhookEvent(webhookUrl, `**Deployment failed** ([Github Job](<${actionJobUrl}>)) with exit code ${exitCode}`);
+                sendWebhookEvent(webhookUrl, `**Deployment failed** — [${commitSha.substring(0, 7)}](<${commitUrl}>) — [Github Job](<${actionJobUrl}>) with exit code ${exitCode}`);
             }
             throw new Error(`Command failed with exit code ${exitCode}: ${error}`);
         }
@@ -57,12 +59,12 @@ async function run() {
             core.setOutput("url", deployUrl);
             if (webhookUrl) {
                 const url_str = noUnfurl ? `<${deployUrl}>` : `${deployUrl}`;
-                sendWebhookEvent(webhookUrl, `🎉 **${repositoryOwner}/${repositoryName} deployed successfully** — [Repository](<${repositoryHtmlUrl}>) — [Github Job](<${actionJobUrl}>)\n\n${url_str}`);
+                sendWebhookEvent(webhookUrl, `🎉 **${repositoryOwner}/${repositoryName} deployed successfully** — [Repository](<${repositoryHtmlUrl}>) — [${commitSha.substring(0, 7)}](<${commitUrl}>) — [Github Job](<${actionJobUrl}>)\n\n${url_str}`);
             }
         } else {
             core.warning("Could not find deployment URL in output");
             core.setOutput("url", "");
-            if (webhookUrl) sendWebhookEvent(webhookUrl, `**Deployed ${repositoryOwner}/${repositoryName}** — [Repository](<${repositoryHtmlUrl}>) — [Github Job](<${actionJobUrl}>) but no URL was found in the output.`);
+            if (webhookUrl) sendWebhookEvent(webhookUrl, `**Deployed ${repositoryOwner}/${repositoryName}** — [Repository](<${repositoryHtmlUrl}>) — [${commitSha.substring(0, 7)}](<${commitUrl}>) — [Github Job](<${actionJobUrl}>) but no URL was found in the output.`);
         }
 
     } catch (error) {
