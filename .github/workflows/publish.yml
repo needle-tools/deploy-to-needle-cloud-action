@@ -79,3 +79,5 @@ jobs:
       - uses: JasonEtco/build-and-tag-action@v2
         env:
           GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: ${{ github.event_name == 'release' && github.event.release.tag_name || needs.check-version.outputs.version }}
