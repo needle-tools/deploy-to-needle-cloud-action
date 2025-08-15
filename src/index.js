@@ -65,7 +65,7 @@ async function run() {
         });
         if (exitCode !== 0) {
             if (webhookUrl) {
-                sendWebhookEvent(webhookUrl, `**Deployment failed** — [${commitSha.substring(0, 7)}](<${commitUrl}>) — [Github Job](<${actionJobUrl}>) with exit code ${exitCode}\n\n\`\`\`\n${commitMessage}\n\`\`\``);
+                sendWebhookEvent(webhookUrl, `🧨 **Deployment failed** — [${commitSha.substring(0, 7)}](<${commitUrl}>) — [Github Job](<${actionJobUrl}>) with exit code ${exitCode}\n\`\`\`\n${commitMessage}\n\`\`\``);
             }
             throw new Error(`Command failed with exit code ${exitCode}: ${error}`);
         }
@@ -78,12 +78,12 @@ async function run() {
             core.setOutput("url", deployUrl);
             if (webhookUrl) {
                 const url_str = noUnfurl ? `<${deployUrl}>` : `${deployUrl}`;
-                sendWebhookEvent(webhookUrl, `🎉 **${repositoryOwner}/${repositoryName} deployed successfully** — [Repository](<${repositoryHtmlUrl}>) — [${commitSha.substring(0, 7)}](<${commitUrl}>) — [Github Job](<${actionJobUrl}>)\n\n\`\`\`\n${commitMessage}\n\`\`\`\n\n${url_str}`);
+                sendWebhookEvent(webhookUrl, `🎉 **${repositoryOwner}/${repositoryName} deployed successfully** — [Repository](<${repositoryHtmlUrl}>) — [${commitSha.substring(0, 7)}](<${commitUrl}>) — [Github Job](<${actionJobUrl}>)\n\`\`\`\n${commitMessage}\n\`\`\`\n${url_str}`);
             }
         } else {
             core.warning("Could not find deployment URL in output");
             core.setOutput("url", "");
-            if (webhookUrl) sendWebhookEvent(webhookUrl, `**Deployed ${repositoryOwner}/${repositoryName}** — [Repository](<${repositoryHtmlUrl}>) — [${commitSha.substring(0, 7)}](<${commitUrl}>) — [Github Job](<${actionJobUrl}>) but no URL was found in the output.\n\n\`\`\`\n${commitMessage}\n\`\`\``);
+            if (webhookUrl) sendWebhookEvent(webhookUrl, `📯 **Deployed ${repositoryOwner}/${repositoryName}** — [Repository](<${repositoryHtmlUrl}>) — [${commitSha.substring(0, 7)}](<${commitUrl}>) — [Github Job](<${actionJobUrl}>) but no URL was found in the output.\n\`\`\`\n${commitMessage}\n\`\`\``);
         }
 
     } catch (error) {
