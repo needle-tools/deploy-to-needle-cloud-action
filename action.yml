@@ -20,6 +20,10 @@ inputs:
   webhookUrl:
     description: 'Webhook URL to notify on deployment completion'
     required: false
+  no-unfurl:
+    description: 'Prevent unfurling of URLs in the webhook message'
+    required: false
+    default: 'false'
 outputs:
   url:
     description: 'Deployment URL'
