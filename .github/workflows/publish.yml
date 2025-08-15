@@ -1,17 +1,79 @@
 name: Publish
 
 on:
+  push:
+    branches: [main]
+    paths: ['package.json']
   release:
     types: [published, edited]
 
 jobs:
+  check-version:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    outputs:
+      should-release: ${{ steps.check.outputs.should-release }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      
+      - name: Get version
+        id: version
+        run: echo "version=v$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      
+      - name: Check if version changed and release doesn't exist
+        id: check
+        run: |
+          # Check if version changed
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          git checkout HEAD^
+          PREVIOUS_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || echo "0.0.0")
+          git checkout -
+          
+          if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
+            echo "Version changed from $PREVIOUS_VERSION to $CURRENT_VERSION"
+            # Check if release exists
+            if gh release view "v$CURRENT_VERSION" >/dev/null 2>&1; then
+              echo "Release v$CURRENT_VERSION already exists"
+              echo "should-release=false" >> $GITHUB_OUTPUT
+            else
+              echo "should-release=true" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "Version not changed"
+            echo "should-release=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  create-release:
+    if: github.event_name == 'push' && needs.check-version.outputs.should-release == 'true'
+    needs: check-version
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ needs.check-version.outputs.version }}" \
+            --title "${{ needs.check-version.outputs.version }}" \
+            --generate-notes
+
   build:
+    if: github.event_name == 'release' || (github.event_name == 'push' && needs.check-version.outputs.should-release == 'true')
+    needs: [check-version, create-release]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref }}
       - name: Install deps and build
         run: npm ci && npm run build
       - uses: JasonEtco/build-and-tag-action@v2
