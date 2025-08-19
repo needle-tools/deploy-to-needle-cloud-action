@@ -52,8 +52,8 @@ async function run() {
                 }
             }
         };
-        if (next) {
-            console.warn("Installing 'next' needle-cloud package...")
+        if (next === true) {
+            console.warn(`Installing 'next' needle-cloud package... (${core.getInput('next')})`)
             await exec.exec("npm i -g needle-cloud@next", [], options);
         }
         else {
