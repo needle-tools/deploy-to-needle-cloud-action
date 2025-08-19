@@ -17,6 +17,9 @@ Automatically deploy your spatial website to [Needle Cloud](https://cloud.needle
 | `token`| **required**, Needle Cloud access token
 | `name` | deployment name, if no name is provided then the repository name will be used
 | `dir` | root directory of the website files, must contain an `index.html`. If no directory is provided the build directory from `needle.config.json` will be used
+| `webhookUrl` | optional webhook URL for deployment notifications (e.g., Discord, Slack)
+| `no-unfurl` | set to `'true'` to prevent URL unfurling in webhook messages
+
 | **Output** | |
 | `url` | URL to the deployed website |
 
@@ -29,6 +32,7 @@ Automatically deploy your spatial website to [Needle Cloud](https://cloud.needle
             token: ${{ secrets.NEEDLE_CLOUD_TOKEN }}
             name: vite-template
             dir: ./dist
+            webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }} # optional
 ```
 
 ## Full Example
@@ -73,6 +77,7 @@ jobs:
             token: ${{ secrets.NEEDLE_CLOUD_TOKEN }}
             dir: ./dist
             # name: vite-template # (optional, using the repository name if not provided)
+            webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }} # optional: send notifications to Discord/Slack
         env:
           NODE_ENV: production
           NEEDLE_CLOUD_TOKEN: ${{ secrets.NEEDLE_CLOUD_TOKEN }}
@@ -86,6 +91,38 @@ jobs:
           echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "Application has been successfully deployed to Needle Cloud!" >> $GITHUB_STEP_SUMMARY
           echo "**Deployment URL:** [${{ steps.deploy.outputs.url }}](${{ steps.deploy.outputs.url }})" >> $GITHUB_STEP_SUMMARY
+```
+
+## Webhook Notifications
+
+The action supports sending deployment notifications to Discord, Slack, or any service that accepts webhooks. Notifications include:
+
+- 🎉 **Successful deployments** with repository link, commit info, job link, commit message, and deployment URL
+- 🧨 **Failed deployments** with error details and commit information  
+- 📯 **Deployments without URL** when deployment succeeds but no URL is found
+
+### Webhook Message Format
+
+Messages include:
+- **Repository link** - Link to the GitHub repository
+- **Commit link** - `[abc1234](url)` format linking to the specific commit
+- **Job link** - Link to the GitHub Actions run
+- **Commit message** - First 200 characters in a code block
+- **Deployment URL** - The deployed site URL (for successful deployments)
+
+### Setup for Discord
+
+1. Create a webhook in your Discord server (Server Settings → Integrations → Webhooks)
+2. Copy the webhook URL
+3. Add it as a repository secret named `DISCORD_WEBHOOK_URL`
+4. Add `webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }}` to your workflow
+
+### Setup for Slack
+
+1. Create a Slack app with incoming webhooks enabled
+2. Copy the webhook URL  
+3. Add it as a repository secret named `SLACK_WEBHOOK_URL`
+4. Add `webhookUrl: ${{ secrets.SLACK_WEBHOOK_URL }}` to your workflow
 ```
 
 # Contact ✒️
