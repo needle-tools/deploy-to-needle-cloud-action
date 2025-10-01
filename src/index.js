@@ -83,6 +83,7 @@ async function run() {
                 console.log(`Edit URL: ${edit_url}`);
                 core.setOutput("edit_url", edit_url);
             }
+            else console.log("No edit_id output variable found");
 
             const deployUrl = urlMatch[0];
             console.log(`Deployment URL: ${deployUrl}`, edit_url);
@@ -116,6 +117,7 @@ function readOutput(key) {
         const path = process.env.GITHUB_OUTPUT;
         if (path && existsSync(path)) {
             const content = readFileSync(path, 'utf-8');
+            console.log("GITHUB_OUTPUT content:", content);
             const lines = content.split('\n');
             for (const line of lines) {
                 const [k, v] = line.split('=');
@@ -124,6 +126,7 @@ function readOutput(key) {
                 }
             }
         }
+        else console.log("GITHUB_OUTPUT environment variable is not set or file does not exist.", path);
     }
     catch (err) {
         console.error("Error reading GITHUB_OUTPUT:", err);
