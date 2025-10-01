@@ -14,10 +14,6 @@ inputs:
   dir:
     description: 'Directory to deploy'
     required: false
-  next:
-    description: 'Using the needle-cloud@next package version'
-    required: false
-    default: 'false'
   webhookUrl:
     description: 'Webhook URL to notify on deployment completion'
     required: false
@@ -25,6 +21,16 @@ inputs:
     description: 'Prevent unfurling of URLs in the webhook message'
     required: false
     default: 'false'
+  overrideVersion:
+    description: 'Override the version of needle-cloud package to use (e.g., "1.2.3" or "next")'
+    required: false
+
+  next:
+    description: 'Using the needle-cloud@next package version'
+    required: false
+    default: 'false'
+    deprecationMessage: 'The "next" input is deprecated. Please use "overrideVersion" instead.'
+
 outputs:
   url:
     description: 'Deployment URL'

@@ -8,7 +8,7 @@ async function run() {
         const token = core.getInput('token');
         const dir = core.getInput('dir') || ".";
         const name = core.getInput('name') || repositoryName;
-        const next = core.getInput('next') === 'true';
+        const overrideVersion = core.getInput('overrideVersion');
         const webhookUrl = core.getInput('webhookUrl');
         const noUnfurl = core.getInput('no-unfurl') === 'true';
 
@@ -52,9 +52,9 @@ async function run() {
                 }
             }
         };
-        if (next === true) {
-            console.warn(`Installing 'next' needle-cloud package... (${core.getInput('next')})`)
-            await exec.exec("npm i -g needle-cloud@next", [], options);
+        if (overrideVersion?.length) {
+            console.warn(`Installing needle-cloud package: ${overrideVersion}`)
+            await exec.exec("npm i -g needle-cloud@" + overrideVersion, [], options);
         }
         else {
             await exec.exec("npm i -g needle-cloud", [], options);
