@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import { sendWebhookEvent } from './webhook';
+import { existsSync, readFileSync } from 'fs';
 
 async function run() {
     try {
@@ -16,7 +17,7 @@ async function run() {
         const actionJobUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
         const commitSha = process.env.GITHUB_SHA;
         const commitUrl = `${process.env.GITHUB_SERVER_URL}/${repositoryOwner}/${repositoryName}/commit/${commitSha}`;
-        
+
         // Get commit message, escape backticks, and limit to 200 chars
         let commitMessage = '';
         try {
@@ -74,9 +75,19 @@ async function run() {
         // Extract URL from the output using regex
         const urlMatch = output.match(/(https:\/\/[\w.-]+\.\w+[\w/.-]*)/);
         if (urlMatch && urlMatch[0]) {
+
+            const edit_id = readOutput("edit_id");
+            let edit_url = null;
+            if (edit_id) {
+                edit_url = "https://cloud.needle.tools/edit/" + edit_id;
+                console.log(`Edit URL: ${edit_url}`);
+                core.setOutput("edit_url", edit_url);
+            }
+
             const deployUrl = urlMatch[0];
-            console.log(`Deployment URL: ${deployUrl}`);
+            console.log(`Deployment URL: ${deployUrl}`, edit_url);
             core.setOutput("url", deployUrl);
+
             if (webhookUrl) {
                 const url_str = noUnfurl ? `<${deployUrl}>` : `${deployUrl}`;
                 sendWebhookEvent(webhookUrl, `🎉 **${repositoryOwner}/${repositoryName} deployed successfully** — [Repository](<${repositoryHtmlUrl}>) — [${commitSha?.substring(0, 7)}](<${commitUrl}>) — [Github Job](<${actionJobUrl}>)\n\`\`\`\n${commitMessage}\n\`\`\`\n${url_str}`);
@@ -84,7 +95,7 @@ async function run() {
         } else {
             core.warning("Could not find deployment URL in output");
             core.setOutput("url", "");
-            if (webhookUrl) sendWebhookEvent(webhookUrl, `📯 **Deployed ${repositoryOwner}/${repositoryName}** — [Repository](<${repositoryHtmlUrl}>) — [${commitSha?.substring(0, 7)}](<${commitUrl}>) — [Github Job](<${actionJobUrl}>) but no URL was found in the output.\n\`\`\`\n${commitMessage}\n\`\`\``);
+            if (webhookUrl) sendWebhookEvent(webhookUrl, `📯 **Deployed ${repositoryOwner}/${repositoryName}** — [Repository](<${repositoryHtmlUrl}>) — [${commitSha?.substring(0, 7)}](<${commitUrl}>) — [Github Job](<${actionJobUrl}>) → but no URL was found in the output.\n\`\`\`\n${commitMessage}\n\`\`\``);
         }
 
     } catch (error) {
@@ -93,3 +104,29 @@ async function run() {
 }
 
 run();
+
+
+/**
+ * Reads an output variable from the GitHub Actions environment file.
+ * @param {string} key - The key of the output variable to read.
+ * @returns {string | undefined} - The value of the output variable, or undefined if not found.
+ */
+function readOutput(key) {
+    try {
+        const path = process.env.GITHUB_OUTPUT;
+        if (path && existsSync(path)) {
+            const content = readFileSync(path, 'utf-8');
+            const lines = content.split('\n');
+            for (const line of lines) {
+                const [k, v] = line.split('=');
+                if (k === key) {
+                    return v;
+                }
+            }
+        }
+    }
+    catch (err) {
+        console.error("Error reading GITHUB_OUTPUT:", err);
+    }
+    return undefined;
+}
