@@ -1,6 +1,6 @@
 {
   "name": "deploy-to-needle-cloud-action",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "",
   "main": "dist/index.js",
   "scripts": {

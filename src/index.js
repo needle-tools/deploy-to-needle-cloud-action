@@ -100,8 +100,8 @@ async function run() {
 
             if (webhookUrl) {
                 const url_str = noUnfurl ? `<${deployment_url}>` : `${deployment_url}`;
-                const edit_str = edit_url ? ` | [Edit](<${edit_url}>)` : '';
-                sendWebhookEvent(webhookUrl, `🎉 **${repositoryOwner}/${repositoryName} deployed successfully** — [Repository](<${repositoryHtmlUrl}>) — [${commitSha?.substring(0, 7)}](<${commitUrl}>) — [Github Job](<${actionJobUrl}>)\n\`\`\`\n${commitMessage}\n\`\`\`\n${url_str}${edit_str}`);
+                const edit_str = edit_url ? ` — [Edit](<${edit_url}>)` : '';
+                sendWebhookEvent(webhookUrl, `🎉 **${repositoryOwner}/${repositoryName} deployed successfully** — [Repository](<${repositoryHtmlUrl}>) — [${commitSha?.substring(0, 7)}](<${commitUrl}>) — [Github Job](<${actionJobUrl}>)${edit_str}\n\`\`\`\n${commitMessage}\n\`\`\`\n${url_str}`);
             }
         } else {
             core.warning("Could not find deployment URL in output");
