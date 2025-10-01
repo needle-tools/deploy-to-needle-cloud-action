@@ -72,26 +72,36 @@ async function run() {
             throw new Error(`Command failed with exit code ${exitCode}: ${error}`);
         }
 
+
+        // Read output variable from needle-cloud process via GITHUB_OUTPUT
+        let deployment_url = null;
+        let edit_url = null;
+        const edit_id = readOutput("edit_id");
+        if (edit_id) {
+            edit_url = "https://cloud.needle.tools/edit/" + edit_id;
+            console.log(`Edit URL: ${edit_url}`);
+            core.setOutput("edit_url", edit_url);
+        }
+        else console.log("No edit_id output variable found");
+        const deployment_url_output = readOutput("deployment_url");
+        if (deployment_url_output) {
+            deployment_url = deployment_url_output;
+        }
+
+
         // Extract URL from the output using regex
         const urlMatch = output.match(/(https:\/\/[\w.-]+\.\w+[\w/.-]*)/);
-        if (urlMatch && urlMatch[0]) {
+        if (deployment_url || urlMatch?.[0]) {
 
-            const edit_id = readOutput("edit_id");
-            let edit_url = null;
-            if (edit_id) {
-                edit_url = "https://cloud.needle.tools/edit/" + edit_id;
-                console.log(`Edit URL: ${edit_url}`);
-                core.setOutput("edit_url", edit_url);
-            }
-            else console.log("No edit_id output variable found");
+            if (!deployment_url && urlMatch?.[0]) deployment_url = urlMatch[0];
+            console.log(`Deployment URL: ${deployment_url}`, edit_url);
 
-            const deployUrl = urlMatch[0];
-            console.log(`Deployment URL: ${deployUrl}`, edit_url);
-            core.setOutput("url", deployUrl);
+            core.setOutput("url", deployment_url);
 
             if (webhookUrl) {
-                const url_str = noUnfurl ? `<${deployUrl}>` : `${deployUrl}`;
-                sendWebhookEvent(webhookUrl, `🎉 **${repositoryOwner}/${repositoryName} deployed successfully** — [Repository](<${repositoryHtmlUrl}>) — [${commitSha?.substring(0, 7)}](<${commitUrl}>) — [Github Job](<${actionJobUrl}>)\n\`\`\`\n${commitMessage}\n\`\`\`\n${url_str}`);
+                const url_str = noUnfurl ? `<${deployment_url}>` : `${deployment_url}`;
+                const edit_str = edit_url ? ` | [Edit](<${edit_url}>)` : '';
+                sendWebhookEvent(webhookUrl, `🎉 **${repositoryOwner}/${repositoryName} deployed successfully** — [Repository](<${repositoryHtmlUrl}>) — [${commitSha?.substring(0, 7)}](<${commitUrl}>) — [Github Job](<${actionJobUrl}>)\n\`\`\`\n${commitMessage}\n\`\`\`\n${url_str}${edit_str}`);
             }
         } else {
             core.warning("Could not find deployment URL in output");
@@ -117,7 +127,6 @@ function readOutput(key) {
         const path = process.env.GITHUB_OUTPUT;
         if (path && existsSync(path)) {
             const content = readFileSync(path, 'utf-8');
-            console.log("GITHUB_OUTPUT content:", content);
             const lines = content.split('\n');
             for (const line of lines) {
                 const [k, v] = line.split('=');
@@ -126,7 +135,6 @@ function readOutput(key) {
                 }
             }
         }
-        else console.log("GITHUB_OUTPUT environment variable is not set or file does not exist.", path);
     }
     catch (err) {
         console.error("Error reading GITHUB_OUTPUT:", err);
