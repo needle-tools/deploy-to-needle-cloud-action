@@ -63,13 +63,17 @@ async function run() {
         const cmd = `needle-cloud deploy "${dir}" --name "${name}" --token "${token}"`;
         const exitCode = await exec.exec(cmd, [], options).catch((err) => {
             error += err.message;
-            return { exitCode: 1, error: err.message };
+            return 1;
         });
-        if (exitCode !== 0) {
+        const combined = output + error;
+        if (exitCode !== 0 || /Unauthorized/i.test(combined)) {
+            const reason = /Unauthorized/i.test(combined)
+                ? `Unauthorized — the provided token may not be valid for this API environment (e.g. production token used with staging CLI)`
+                : error;
             if (webhookUrl) {
-                sendWebhookEvent(webhookUrl, `🧨 **Deployment failed** — [${commitSha?.substring(0, 7)}](<${commitUrl}>) — [Github Job](<${actionJobUrl}>) with exit code ${exitCode}\n\`\`\`\n${commitMessage}\n\`\`\``);
+                sendWebhookEvent(webhookUrl, `🧨 **Deployment failed** — [${commitSha?.substring(0, 7)}](<${commitUrl}>) — [Github Job](<${actionJobUrl}>)\n\`\`\`\n${commitMessage}\n\`\`\`\n${reason}`);
             }
-            throw new Error(`Command failed with exit code ${exitCode}: ${error}`);
+            throw new Error(`Deployment failed: ${reason}`);
         }
 
 
