@@ -16,6 +16,7 @@ Automatically deploy your spatial website to [Needle Cloud](https://cloud.needle
 |-|-|
 | `token`| **required**, Needle Cloud access token
 | `name` | deployment name, if no name is provided then the repository name will be used
+| `label` | optional label to create or move to the exact deployed version, e.g. `main` or `staging`. Requires read/write token permissions and a CLI release supporting `deploy --label`. `latest` is managed automatically and cannot be set. |
 | `dir` | root directory of the website files, must contain an `index.html`. If no directory is provided the build directory from `needle.config.json` will be used
 | `webhookUrl` | optional webhook URL for deployment notifications (e.g., Discord, Slack)
 | `no-unfurl` | set to `'true'` to prevent URL unfurling in webhook messages
@@ -32,6 +33,8 @@ Automatically deploy your spatial website to [Needle Cloud](https://cloud.needle
             token: ${{ secrets.NEEDLE_CLOUD_TOKEN }}
             name: vite-template
             dir: ./dist
+            label: main # optional: move main to this deployment
+            overrideVersion: '3.5.0' # publish this CLI release before using label
             webhookUrl: ${{ secrets.DISCORD_WEBHOOK_URL }} # optional
 ```
 

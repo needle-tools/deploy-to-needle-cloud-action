@@ -1,6 +1,7 @@
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import { sendWebhookEvent } from './webhook';
+import { deployArguments } from './deploy-arguments';
 import { existsSync, readFileSync } from 'fs';
 
 async function run() {
@@ -9,6 +10,7 @@ async function run() {
         const token = core.getInput('token');
         const dir = core.getInput('dir') || ".";
         const name = core.getInput('name') || repositoryName;
+        const label = core.getInput('label');
         const overrideVersion = core.getInput('overrideVersion');
         const webhookUrl = core.getInput('webhookUrl');
         const noUnfurl = core.getInput('no-unfurl') === 'true';
@@ -60,8 +62,7 @@ async function run() {
         else {
             await exec.exec("npm i -g needle-cloud", [], options);
         }
-        const cmd = `needle-cloud deploy "${dir}" --name "${name}" --token "${token}"`;
-        const exitCode = await exec.exec(cmd, [], options).catch((err) => {
+        const exitCode = await exec.exec('needle-cloud', deployArguments({dir, name, token, label}), options).catch((err) => {
             error += err.message;
             return 1;
         });

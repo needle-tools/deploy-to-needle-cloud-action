@@ -14,6 +14,9 @@ inputs:
   dir:
     description: 'Directory to deploy'
     required: false
+  label:
+    description: 'Create or move this label to the deployed version (requires a CLI version supporting deploy --label and read/write token permissions; latest is automatic)'
+    required: false
   webhookUrl:
     description: 'Webhook URL to notify on deployment completion'
     required: false

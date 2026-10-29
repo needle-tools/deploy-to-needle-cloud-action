@@ -27669,9 +27669,20 @@ function send(url, port, body) {
         console.log(`Webhook sent to ${url.href}`);
     });
 }
+;// CONCATENATED MODULE: ./src/deploy-arguments.js
+/** Build arguments without shell interpolation; validation belongs to the CLI.
+ * @param {{dir: string, name: string, token: string, label?: string}} inputs
+ * @returns {string[]} */
+function deployArguments({dir, name, token, label}) {
+    const args = ['deploy', dir, '--name', name, '--token', token];
+    if (label) args.push('--label', label);
+    return args;
+}
+
 // EXTERNAL MODULE: external "fs"
 var external_fs_ = __nccwpck_require__(9896);
 ;// CONCATENATED MODULE: ./src/index.js
+
 
 
 
@@ -27683,6 +27694,7 @@ async function run() {
         const token = core.getInput('token');
         const dir = core.getInput('dir') || ".";
         const name = core.getInput('name') || repositoryName;
+        const label = core.getInput('label');
         const overrideVersion = core.getInput('overrideVersion');
         const webhookUrl = core.getInput('webhookUrl');
         const noUnfurl = core.getInput('no-unfurl') === 'true';
@@ -27734,8 +27746,7 @@ async function run() {
         else {
             await exec.exec("npm i -g needle-cloud", [], options);
         }
-        const cmd = `needle-cloud deploy "${dir}" --name "${name}" --token "${token}"`;
-        const exitCode = await exec.exec(cmd, [], options).catch((err) => {
+        const exitCode = await exec.exec('needle-cloud', deployArguments({dir, name, token, label}), options).catch((err) => {
             error += err.message;
             return 1;
         });
@@ -27819,6 +27830,7 @@ function readOutput(key) {
     }
     return undefined;
 }
+
 })();
 
 module.exports = __webpack_exports__;
